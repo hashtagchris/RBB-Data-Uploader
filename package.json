@@ -4,7 +4,8 @@
   "description": "",
   "bin": {
     "upload-data": "./bin/index.js",
-    "parse-csv": "./bin/csv.js"
+    "parse-csv": "./bin/csv.js",
+    "geocode": "./bin/geocode.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -23,10 +24,12 @@
   "dependencies": {
     "airtable": "^0.8.1",
     "boxen": "^4.2.0",
+    "chalk": "^4.0.0",
     "csv-parser": "^2.3.3",
+    "csv-writer": "^1.6.0",
     "dotenv": "^8.2.0",
     "get-stream": "^5.1.0",
-    "chalk": "^4.0.0",
+    "node-geocoder": "^3.27.0",
     "yargs": "^15.3.1"
   }
 }
