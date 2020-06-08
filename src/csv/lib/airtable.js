@@ -7,6 +7,7 @@ const schema = Object.freeze({
     'Zip Code': '',
     'Business Description': '',
     'Website': '',
+    'Image': '',
     'In Need': true,
     'CreatedAt': '',
 });
