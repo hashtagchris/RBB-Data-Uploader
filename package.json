@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "bin": {
-    "upload-data": "./bin/index.js"
+    "upload-data": "./bin/index.js",
+    "parse-csv": "./bin/csv.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -22,8 +23,10 @@
   "dependencies": {
     "airtable": "^0.8.1",
     "boxen": "^4.2.0",
-    "chalk": "^4.0.0",
+    "csv-parser": "^2.3.3",
     "dotenv": "^8.2.0",
+    "get-stream": "^5.1.0",
+    "chalk": "^4.0.0",
     "yargs": "^15.3.1"
   }
 }
