@@ -1,5 +1,4 @@
 const schema = Object.freeze({
-    'ID': 0,
     'Name': '',
     'Email': '',
     'Business Name': '',
@@ -8,7 +7,7 @@ const schema = Object.freeze({
     'Business Description': '',
     'Website': '',
     'In Need': true,
-    'CreatedAt': '',
+    'Source': 'Uploaded',
 });
 
 const normalizeRecord = (data, converter) => {

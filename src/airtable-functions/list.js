@@ -3,11 +3,12 @@ const base =  require('./airtable-provider')
 const fancyLog = require('../utils').fancyLog
 
 function listTable(name, onComplete) {
+  fancyLog(`Fetching all records from the ${name} table`)
   const tableData = []
   base(name).select({
     // Selecting the first 3 records in Grid view:
     maxRecords: 50000,
-    view: "Grid view"
+    view: "All Data"
   }).eachPage(function page(records, fetchNextPage) {
     // This function (`page`) will get called for each page of records.
     fancyLog(`Fetched ${records.length} records`)
@@ -26,7 +27,7 @@ function listTable(name, onComplete) {
 
   }, function done(err) {
     if (err) { console.error(err); return; }
-    fancyLog('All records fetched')
+    fancyLog(`All records fetched from the ${name} table`)
     // console.log(tableData)
     onComplete(tableData)
   });

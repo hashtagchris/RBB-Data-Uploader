@@ -13,10 +13,19 @@ const convertToAirtable = (record) => {
 
     for(field in record) {
         if(AirtableMapping[field]) {
-            let mappedField = AirtableMapping[field];    
-            mappedField === 'In Need' ? 
-                result[mappedField] = record[field] < 1 ? true : false : 
-                result[mappedField] = record[field]
+            let mappedField = AirtableMapping[field];
+            switch (mappedField) {
+                case 'In Need': {
+                    result[mappedField] = record[field] < 1 ? true : false
+                    break;
+                }
+                case 'Approved': {
+                    result[mappedField] = record[field] === 'Yes' ? true : false
+                    break;
+                }
+                default:
+                    result[mappedField] = record[field]
+            }
         }
     }
     return result;
