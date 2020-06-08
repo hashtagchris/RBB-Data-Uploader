@@ -7,7 +7,7 @@ Each new csv source is a simple mapper object and a conversion function, setup a
 
 ### Creating a New Converter
 
-New converters can be added simply by adding a couple of exported methods to a fule in the modules/csv/converters module path. 
+New converters can be added simply by adding a couple of exported methods to a file in the modules/csv/converters module path. 
 
 #### [module].js
 
