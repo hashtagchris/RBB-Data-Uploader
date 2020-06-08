@@ -2,7 +2,7 @@
 const base =  require('./airtable-provider')
 const fancyLog = require('../utils').fancyLog
 const listRecords = require('./list')
-const _ = require('lodash')
+const chunk = require('lodash.chunk')
 
 const parseData = require('../csv') 
 const schema = require('../csv/lib/airtable').schema
@@ -55,26 +55,31 @@ async function create(tablename, csvFile, csvSource) {
 
         // Handle global defaults, e.g. things that are set regardless of the source data
         csvRow.fields.Approved = false
-        csvRow.fields.Storefront = Boolean(csvRow.fields['Zip Code'])
-
+        csvRow.fields['Physical Location'] = Boolean(csvRow.fields['Zip Code'])
+        // TODO: (bmc) remove this temporary category BS
+        csvRow.fields.Category = 'Entertainment'
         // Add the record to the deduped list.
         dedupedUploadList.push(csvRow)
       }
     })
     if (dedupedUploadList.length > 0) {
       fancyLog(`Found ${dedupedUploadList.length} unique records`)
-      base(tablename).create(dedupedUploadList, function(err, records) {
-        if (err) {
-          console.error(err);
-          return;
-        }
-        fancyLog(`Created ${records.length} new records`)
-        records.forEach(function (record) {
-          console.log(record.getId());
+      const chunkedList = chunk(dedupedUploadList, 10)
+      chunkedList.forEach(chunk => {
+        base(tablename).create(chunk, function(err, records) {
+          if (err) {
+            console.error(err);
+            return;
+          }
+          fancyLog(`Created ${records.length} new records`)
+          records.forEach(function (record) {
+            console.log(record.getId());
+          });
         });
-      });
+      })
+      fancyLog(`Finished uploading ${dedupedUploadList.length} records`, 'success', true)
     } else {
-      fancyLog(`No new records created`, 'warning')
+      fancyLog(`No new records created`, 'warning', true)
     }
   })
 }

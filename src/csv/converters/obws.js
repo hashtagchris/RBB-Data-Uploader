@@ -6,7 +6,7 @@ const AirtableMapping = {
     businessName: 'Business Name',
     category: 'Category',
     zipCode: 'Zip Code',
-    businessDescription: 'Description',
+    businessDescription: 'Business Description',
     website: 'Website',
     image: 'Image',
 }
