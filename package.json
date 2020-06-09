@@ -4,7 +4,8 @@
   "description": "",
   "bin": {
     "upload-data": "./bin/index.js",
-    "parse-csv": "./bin/csv.js"
+    "parse-csv": "./bin/csv.js",
+    "augment-csv-with-yelp-data": "./bin/augment-csv-with-yelp-data.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -25,6 +26,7 @@
     "boxen": "^4.2.0",
     "chalk": "^4.0.0",
     "csv-parser": "^2.3.3",
+    "csv-writer": "^1.6.0",
     "dotenv": "^8.2.0",
     "get-stream": "^5.1.0",
     "lodash.chunk": "^4.2.0",
