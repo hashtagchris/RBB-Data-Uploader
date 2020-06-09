@@ -9,7 +9,9 @@ const convertToAirtable = (record) => {
     const result = Object.assign({}, schema);
 
     for (field in record) {
-        result[field] = record[field]
+        if (result[field]) {
+            result[field] = record[field]
+        }
     }
     return result;
 }

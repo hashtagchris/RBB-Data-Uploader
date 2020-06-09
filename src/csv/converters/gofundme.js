@@ -4,7 +4,7 @@ const AirtableMapping = {
     includeOnWebsite: 'Approved',
     pageUrl: 'Donation Link',
     organizerName: 'Name',
-    category: 'Category',
+    category: 'Original Category',
     progress:   'In Need'
 }
 

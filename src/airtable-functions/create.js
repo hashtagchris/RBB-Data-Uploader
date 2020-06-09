@@ -6,6 +6,10 @@ const chunk = require('lodash.chunk')
 
 const parseData = require('../csv') 
 const schema = require('../csv/lib/airtable').schema
+const fs = require('fs');
+
+const businessCategoriesJSON = fs.readFileSync(__dirname + '/../business-categories.json');
+const businessCategories = JSON.parse(businessCategoriesJSON);
 
 const availableFields = [...Object.keys(schema)]
 /*
@@ -56,8 +60,12 @@ async function create(tablename, csvFile, csvSource) {
         // Handle global defaults, e.g. things that are set regardless of the source data
         csvRow.fields.Approved = false
         csvRow.fields['Physical Location'] = Boolean(csvRow.fields['Zip Code'])
-        // TODO: (bmc) remove this temporary category BS
-        csvRow.fields.Category = 'Entertainment'
+        // Map the category to one of the approved categories
+        const originalCategory = csvRow.fields['Original Category']
+        if (originalCategory) {
+          const normalizedCategory = businessCategories[csvRow.fields['Original Category'].toLowerCase()]
+          csvRow.fields.Category = normalizedCategory
+        }
         // Add the record to the deduped list.
         dedupedUploadList.push(csvRow)
       }

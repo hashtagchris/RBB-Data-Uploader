@@ -3,6 +3,7 @@ const schema = Object.freeze({
     'Email': '',
     'Business Name': '',
     'Category': '',
+    'Original Category': '',
     'Zip Code': '',
     'Business Description': '',
     'Website': '',
