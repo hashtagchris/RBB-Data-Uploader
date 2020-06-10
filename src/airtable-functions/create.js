@@ -23,10 +23,14 @@ const availableFields = [...Object.keys(schema)]
 const fieldsToIgnore = ['Source', 'Storefront']
 const fieldsToDedupe = availableFields.filter(field => !fieldsToIgnore.includes(field))
 
-async function create(tablename, csvFile, csvSource) {
+async function create(options) {
+  const {tablename, csv: csvFile, source: csvSource, 'dry-run': dryRun} = options
   const csvData = await parseData(csvFile, csvSource)
-  listRecords(tablename, tableData => {
-    fancyLog(`Deduplicating ${csvData.length} records`)
+  let foundRecordsCount = 0
+  let uniqueRecordsCount = 0
+  listRecords(tablename, dryRun, tableData => {
+    foundRecordsCount = csvData.length
+    fancyLog(`Deduplicating ${foundRecordsCount} records`)
     const dedupedUploadList = []
     csvData.forEach(csvRow => {
       // Determine if the record already exists in Airtable by checking against a list of safe fields.
@@ -49,6 +53,7 @@ async function create(tablename, csvFile, csvSource) {
         })
       })
       if (!recordAlreadyExists) {
+        uniqueRecordsCount++
         // Pop out any empty values since Airtable may not allow them.
         // example: empty strings don't qualify as numbers
         for (const [key, value] of Object.entries(csvRow.fields)) {
@@ -58,7 +63,10 @@ async function create(tablename, csvFile, csvSource) {
         }
 
         // Handle global defaults, e.g. things that are set regardless of the source data
-        csvRow.fields.Approved = false
+        csvRow.fields.Approved = true
+        if(csvRow.fields['Zip Code']) {
+          csvRow.fields['Zip Code'] = csvRow.fields['Zip Code'].toString(10).padStart(5, '0')
+        }
         csvRow.fields['Physical Location'] = Boolean(csvRow.fields['Zip Code'])
         // Map the category to one of the approved categories
         const originalCategory = csvRow.fields['Original Category']
@@ -66,29 +74,34 @@ async function create(tablename, csvFile, csvSource) {
           const normalizedCategory = businessCategories[csvRow.fields['Original Category'].toLowerCase()]
           csvRow.fields.Category = normalizedCategory
         }
+        csvRow.fields.Source = `${csvRow.fields.Source} ${csvSource.toUpperCase()}`
+
         // Add the record to the deduped list.
         dedupedUploadList.push(csvRow)
       }
     })
-    if (dedupedUploadList.length > 0) {
-      fancyLog(`Found ${dedupedUploadList.length} unique records`)
-      const chunkedList = chunk(dedupedUploadList, 10)
-      chunkedList.forEach(chunk => {
-        base(tablename).create(chunk, function(err, records) {
-          if (err) {
-            console.error(err);
-            return;
-          }
-          fancyLog(`Created ${records.length} new records`)
-          records.forEach(function (record) {
-            console.log(record.getId());
+    if (dryRun === false) {
+      if (dedupedUploadList.length > 0) {
+        fancyLog(`Found ${dedupedUploadList.length} unique records`)
+        const chunkedList = chunk(dedupedUploadList, 10)
+        chunkedList.forEach(chunk => {
+          base(tablename).create(chunk, function(err, records) {
+            if (err) {
+              console.error(err);
+              return;
+            }
+            fancyLog(`Created ${records.length} new records`)
+            records.forEach(function (record) {
+              console.log(record.getId());
+            });
           });
-        });
-      })
-      fancyLog(`Finished uploading ${dedupedUploadList.length} records`, 'success', true)
-    } else {
-      fancyLog(`No new records created`, 'warning', true)
+        })
+      } else {
+        fancyLog(`No new records created`, 'warning', true)
+      }
     }
+    fancyLog(`Fetched ${foundRecordsCount} records`, 'success')
+    fancyLog(`Processed ${uniqueRecordsCount} records`, 'success')
   })
 }
 

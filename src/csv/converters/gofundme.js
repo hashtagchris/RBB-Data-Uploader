@@ -5,7 +5,8 @@ const AirtableMapping = {
     pageUrl: 'Donation Link',
     organizerName: 'Name',
     category: 'Original Category',
-    progress:   'In Need'
+    progress:   'In Need',
+    zipCode: 'Zip Code',
 }
 
 const convertToAirtable = (record) => {

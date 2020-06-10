@@ -3,8 +3,8 @@ const {schema} = require('../lib/airtable');
 const AirtableMapping = {
     name: 'Name',
     link: 'Donation Link',
-    categories: 'Category',
-    address:   'Zip Code',
+    categories: 'Original Category',
+    zip: 'Zip Code',
     description: 'Business Description',
     imageUrl: 'Image'
 }
@@ -13,7 +13,8 @@ const convertToAirtable = (record) => {
     const result = Object.assign({}, schema);
 
     for(field in record) {
-        if(AirtableMapping[field]) {
+        const mappedField = AirtableMapping[field];
+        if(mappedField) {
             result[mappedField] = record[field]
         }
     }

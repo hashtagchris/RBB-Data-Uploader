@@ -2,7 +2,11 @@
 const base =  require('./airtable-provider')
 const fancyLog = require('../utils').fancyLog
 
-function listTable(name, onComplete) {
+function listTable(name, dryRun, onComplete) {
+  if (dryRun) {
+    onComplete([])
+    return
+  }
   fancyLog(`Fetching all records from the ${name} table`)
   const tableData = []
   base(name).select({

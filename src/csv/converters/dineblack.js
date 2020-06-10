@@ -1,16 +1,21 @@
-const { schema } = require('../lib/airtable');
-// we dont need a mapping here as the dataset matches the schema from Airtable
-// still may need some inline parse-processing, hence the file and schema setup. 
+const {schema} = require('../lib/airtable');
 
-/**
- * @param {*} record 
- */
+const AirtableMapping = {
+    name: 'Name',
+    link: 'Donation Link',
+    categories: 'Original Category',
+    zipCode: 'Zip Code',
+    description: 'Business Description',
+    imageUrl: 'Image'
+}
+
 const convertToAirtable = (record) => {
     const result = Object.assign({}, schema);
 
-    for (field in record) {
-        if (result[field]) {
-            result[field] = record[field]
+    for(field in record) {
+        const mappedField = AirtableMapping[field];
+        if(mappedField) {
+            result[mappedField] = record[field]
         }
     }
     return result;
