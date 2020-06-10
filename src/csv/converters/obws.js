@@ -9,6 +9,9 @@ const AirtableMapping = {
     businessDescription: 'Business Description',
     website: 'Website',
     image: 'Image',
+    physicalLocation: 'Physical Location',
+    latitude: 'Latitude',
+    longitude: 'Longitude',
 }
 
 const convertToAirtable = (record) => {
