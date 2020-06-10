@@ -79,6 +79,15 @@ async function main() {
 
         // TODO: This column is supposed to be named "Zip Code", per https://github.com/Rebuild-Black-Business/RBB-Data-Uploader/blob/master/src/csv/lib/airtable.js#L7.
         csvRow["zipCode"] = yelpRecord.location.zip_code;
+        
+        if (!yelpRecord.coordinates) {
+            console.warn(`Warning: No geo coordinates for the yelp listing for "${yelpRecord.name}" (${phoneNumber})`);
+            continue;
+        }
+
+        csvRow["latitude"] = yelpRecord.coordinates.latitude;
+        csvRow["longitude"] = yelpRecord.coordinates.longitude;
+
         // console.log(csvRow);
     }
 
