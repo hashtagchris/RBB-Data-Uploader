@@ -7,23 +7,17 @@ const chunk = require('lodash.chunk')
 const parseData = require('../csv') 
 const schema = require('../csv/lib/airtable').schema
 const fs = require('fs')
-const {normalizeUrl} = require('../normalize')
+const {normalizeUrl, normalizeZipCode} = require('../normalize')
 
 const businessCategoriesJSON = fs.readFileSync(__dirname + '/../business-categories.json')
 const businessCategories = JSON.parse(businessCategoriesJSON)
 
-const availableFields = [...Object.keys(schema)]
 /*
-  Add field names here to omit them from the deduplication routine.
-  ======================
-  For example, the Source field might be overwritten if a business is
-  submitted via the webform _after_ it was uploaded by a scraping routine.
-  In that case we wouldn't want to add a new row when the only difference
-  is the Source field.
+  Add airtable schema fields names here used for checking for duplicates.
+  If there's an existing AirTable record with the same values for every one 
+  of these fields, the csv record isn't added.
 */
-const fieldsToIgnore = ['Source', 'Storefront']
-const fieldsToDedupe = availableFields.filter(field => !fieldsToIgnore.includes(field))
-
+const fieldsToDedupe = ['Business Name', 'Zip Code', 'Website']
 function prepareToCompare(value) {
   return value.toString().trim().toUpperCase()
 }
@@ -38,15 +32,41 @@ async function create(options) {
     fancyLog(`Deduplicating ${foundRecordsCount} records`)
     const dedupedUploadList = []
     csvData.forEach(csvRow => {
+      // Business Name is required.
       if (!csvRow.fields['Business Name']) {
         fancyLog(`Skipping record. 'Business Name' value isn't set for ${JSON.stringify(csvRow.fields)}`, 'warning')
         return
       }
 
+      // Normalize Zip Code ahead of dedupping.
+      if (csvRow.fields['Zip Code']) {
+        const zipCode = normalizeZipCode(csvRow.fields['Zip Code'])
+        if (zipCode) {
+          csvRow.fields['Zip Code'] = zipCode
+        }
+        else {
+          delete csvRow.fields['Zip Code']
+        }
+      }
+
+      // Normalize Website ahead of dedupping.
+      if (csvRow.fields['Website']) {
+        const website = normalizeUrl(csvRow.fields['Website'])
+        if (website) {
+          csvRow.fields['Website'] = website
+        }
+        else {
+          fancyLog(`Ignoring invalid website "${csvRow.fields['Website']}"`, 'warning')
+          delete csvRow.fields['Website']
+        }
+      }
+      
       // Determine if the record already exists in Airtable by checking against a list of safe fields.
       const recordAlreadyExists = tableData.find(tableDataRow => {
         // ensure that every field in the list of fields that qualify for deduplication DO NOT HAVE the same value.  
         return fieldsToDedupe.every(fieldName => {
+          // console.log(`Comparing ${fieldName} "${csvRow.fields[fieldName]}" against Airtable's "${tableDataRow[fieldName]}"`)
+
           // TODO: (bmc) There's got to be a better way to handle this logic, but mah brainz hurt
           if (!csvRow.fields[fieldName] && !tableDataRow[fieldName]) {
             // If neither field has a truthy value, we can bail early and consider them a match.
@@ -66,18 +86,6 @@ async function create(options) {
       if (!recordAlreadyExists) {
         uniqueRecordsCount++
 
-        // normalize and validate the website url.
-        if (csvRow.fields['Website']) {
-          const website = normalizeUrl(csvRow.fields['Website'])
-          if (website) {
-            csvRow.fields['Website'] = website
-          }
-          else {
-            fancyLog(`Ignoring invalid website "${csvRow.fields['Website']}"`, 'warning')
-            delete csvRow.fields['Website']
-          }
-        }
-
         // Pop out any empty values since Airtable may not allow them.
         // example: empty strings don't qualify as numbers
         for (const [key, value] of Object.entries(csvRow.fields)) {
@@ -88,9 +96,6 @@ async function create(options) {
 
         // Handle global defaults, e.g. things that are set regardless of the source data
         csvRow.fields.Approved = true
-        if(csvRow.fields['Zip Code']) {
-          csvRow.fields['Zip Code'] = csvRow.fields['Zip Code'].toString(10).padStart(5, '0')
-        }
         csvRow.fields['Physical Location'] = Boolean(csvRow.fields['Zip Code'])
         // Map the category to one of the approved categories
         const originalCategory = csvRow.fields['Original Category']

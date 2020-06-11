@@ -23,3 +23,13 @@ module.exports.normalizeUrl = function (url) {
 
     return ""
 }
+
+module.exports.normalizeZipCode = function (zipCode) {
+    // If the zip code is all zeroes and whitespace, set it to a falsey value.
+    if (zipCode.trim().replace(/0/g, "")) {
+        return ""
+    }
+
+    // Add back leading zeroes that may have been removed by treating the zip as a numeric value.
+    return zipCode.toString(10).padStart(5, '0')
+}
