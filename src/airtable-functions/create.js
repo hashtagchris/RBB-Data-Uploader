@@ -23,6 +23,10 @@ const availableFields = [...Object.keys(schema)]
 const fieldsToIgnore = ['Source', 'Storefront']
 const fieldsToDedupe = availableFields.filter(field => !fieldsToIgnore.includes(field))
 
+function prepareToCompare(value) {
+  return value.toString().trim().toUpperCase()
+}
+
 async function create(options) {
   const {tablename, csv: csvFile, source: csvSource, 'dry-run': dryRun} = options
   const csvData = await parseData(csvFile, csvSource)
@@ -44,7 +48,7 @@ async function create(options) {
           }
           // if both fields have truthy values we need to compare them
           if (csvRow.fields[fieldName] && tableDataRow[fieldName]) {
-            return csvRow.fields[fieldName].toString().toUpperCase() === tableDataRow[fieldName].toString().toUpperCase()
+            return prepareToCompare(csvRow.fields[fieldName]) === prepareToCompare(tableDataRow[fieldName])
           }
 
           // If you made it here, that means one of your values is falsy and the other is not.

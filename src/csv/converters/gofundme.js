@@ -7,6 +7,8 @@ const AirtableMapping = {
     category: 'Original Category',
     progress:   'In Need',
     zipCode: 'Zip Code',
+    latitude: 'Latitude',
+    longitude: 'Longitude',
 }
 
 const convertToAirtable = (record) => {

@@ -10,6 +10,8 @@ const schema = Object.freeze({
     'Image': '',
     'In Need': true,
     'Source': 'Uploaded',
+    'Latitude': '',
+    'Longitude': '',
 });
 
 const normalizeRecord = (data, converter) => {

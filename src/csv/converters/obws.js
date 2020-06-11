@@ -19,7 +19,7 @@ const convertToAirtable = (record) => {
 
     for(field in record) {
         if(AirtableMapping[field]) {
-            let mappedField = AirtableMapping[field]; 
+            let mappedField = AirtableMapping[field];
             result[mappedField] = record[field]
         }
     }
