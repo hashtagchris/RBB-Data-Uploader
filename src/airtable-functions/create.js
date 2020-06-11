@@ -6,10 +6,11 @@ const chunk = require('lodash.chunk')
 
 const parseData = require('../csv') 
 const schema = require('../csv/lib/airtable').schema
-const fs = require('fs');
+const fs = require('fs')
+const {normalizeUrl} = require('../normalize')
 
-const businessCategoriesJSON = fs.readFileSync(__dirname + '/../business-categories.json');
-const businessCategories = JSON.parse(businessCategoriesJSON);
+const businessCategoriesJSON = fs.readFileSync(__dirname + '/../business-categories.json')
+const businessCategories = JSON.parse(businessCategoriesJSON)
 
 const availableFields = [...Object.keys(schema)]
 /*
@@ -33,6 +34,11 @@ async function create(options) {
     fancyLog(`Deduplicating ${foundRecordsCount} records`)
     const dedupedUploadList = []
     csvData.forEach(csvRow => {
+      if (!csvRow.fields['Business Name']) {
+        fancyLog(`Skipping record. 'Business Name' value isn't set for ${JSON.stringify(csvRow.fields)}`, 'warning')
+        return
+      }
+
       // Determine if the record already exists in Airtable by checking against a list of safe fields.
       const recordAlreadyExists = tableData.find(tableDataRow => {
         // ensure that every field in the list of fields that qualify for deduplication DO NOT HAVE the same value.  
@@ -52,8 +58,22 @@ async function create(options) {
           return false
         })
       })
+
       if (!recordAlreadyExists) {
         uniqueRecordsCount++
+
+        // normalize and validate the website url.
+        if (csvRow.fields['Website']) {
+          const website = normalizeUrl(csvRow.fields['Website'])
+          if (website) {
+            csvRow.fields['Website'] = website
+          }
+          else {
+            fancyLog(`Ignoring invalid website "${csvRow.fields['Website']}"`, 'warning')
+            delete csvRow.fields['Website']
+          }
+        }
+
         // Pop out any empty values since Airtable may not allow them.
         // example: empty strings don't qualify as numbers
         for (const [key, value] of Object.entries(csvRow.fields)) {
@@ -80,6 +100,7 @@ async function create(options) {
         dedupedUploadList.push(csvRow)
       }
     })
+
     if (dryRun === false) {
       if (dedupedUploadList.length > 0) {
         fancyLog(`Found ${dedupedUploadList.length} unique records`)
