@@ -72,7 +72,7 @@ async function create(options) {
         const originalCategory = csvRow.fields['Original Category']
         if (originalCategory) {
           const normalizedCategory = businessCategories[csvRow.fields['Original Category'].toLowerCase()]
-          csvRow.fields.Category = normalizedCategory
+          csvRow.fields.Category = normalizedCategory || 'Other'
         }
         csvRow.fields.Source = `${csvRow.fields.Source} ${csvSource.toUpperCase()}`
 
